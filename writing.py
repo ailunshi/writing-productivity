@@ -1,13 +1,4 @@
 #building a writing productivity tracker
-"""
-import tkinter as tk
-app = tk.Tk()
-app.title('Writing Productivity Tracker')
-button = tk.Button(app, text='Start', width=25, command=app.destroy)
-button.pack()
-
-app.mainloop()
-"""
 
 import datetime
 
@@ -37,13 +28,11 @@ else:
     str_end_time = str_time(end_time)
     print("End Time: ", str_end_time)
     total_time = chop_ms(end_time - start_time) #total_time is timedelta object
-    #total_time = chop_ms(total_time)
     print("Total Time: ", str(total_time))
 
     with open(file_path, 'a') as file:
         file.write(f" {str_start_time}, {str_end_time}, {str(total_time)}")
         file.write("\n")
-
 
 
 """
