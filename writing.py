@@ -1,6 +1,8 @@
 #building a writing productivity tracker
 
 import datetime
+import csv
+
 
 def str_time(time):
     #Returns datetime object as a string
@@ -10,7 +12,11 @@ def chop_ms(delta):
     #Returns timedelta object without microseconds
     return delta - datetime.timedelta(microseconds=delta.microseconds)
 
-file_path = "new_file.txt"
+file_path = "new_file.csv"
+with open("new_file.csv", "a", newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(["Start Time", "End Time", "Total Time"])
+
 
 response = input("Type anything to start.")
 if response == "":
@@ -30,9 +36,9 @@ else:
     total_time = chop_ms(end_time - start_time) #total_time is timedelta object
     print("Total Time: ", str(total_time))
 
-    with open(file_path, 'a') as file:
-        file.write(f" {str_start_time}, {str_end_time}, {str(total_time)}")
-        file.write("\n")
+    with open("new_file.csv", "a", newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([str_start_time, str_end_time, str(total_time)])
 
 
 """
