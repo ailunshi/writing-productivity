@@ -1,7 +1,7 @@
 #writing productivity tracker streamlined into a class with dictionary of sessions
-#next thing to do: don't add start/end/total time if it already exists
+#next features: pull word count from file
 
-import datetime, csv
+import datetime, csv, os, plistlib, xml.etree.ElementTree as ET
 
 def str_time(time):
         #Returns datetime object as a string
@@ -11,22 +11,62 @@ def chop_ms(delta):
     #Returns timedelta object without microseconds
     return delta - datetime.timedelta(microseconds=delta.microseconds)
 
+def get_word_count2(plist_path):
+        with open(plist_path, 'rb') as pfile:
+            plist_data = plistlib.load(pfile)
+            word_count = plist_data.get('totalWords')
+
+            return word_count
+
+import xml.etree.ElementTree as ET
+
+def get_word_count(file_path):
+    # Parse the .scrivx file
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+
+    total_word_count = 0
+
+    # Iterate through all documents to sum their word counts
+    for document in root.findall('.//document'):
+        word_count = document.get('wordCount')
+        if word_count:
+            total_word_count += int(word_count)
+
+    return total_word_count
+
+# Usage
+
+
 class WritingSessionTracker:
     def __init__(self):
         #instantiates a session as a list within a list
         #self.sessions = [] #needs to pull existing list from file
         self.session = {}
+        self.file = "new_file.csv"
+        self.project_path = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Bel e Kyre.scrivx"
+        #self.metadata_path = os.path.join(self.project_path, "Settings", "ui.plist")
     
     def start_session(self):
-        file_path = "new_file.csv" #eventually: need to check if file and titles already exist
-        with open("new_file.csv", "a", newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(["Start Time", "End Time", "Total Time"])
+        """
+        if os.path.exists("/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Settings/ui.plist"):
+            print("yay")
+        else:
+            print("this file doesn't exist")"""
+    
+        if os.path.exists(self.file):
+            pass
+        else:
+            with open(self.file, "a", newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(["Start Time", "End Time", "Total Time"])
 
         response = input("Type anything to start.")
         if response == "":
             print("No input was given.")
         else:
+            word_count = get_word_count(self.project_path)
+            print(f'Testing for word count: {word_count}')
             start_time = datetime.datetime.now()
             str_start_time = str_time(start_time)
             print("Start Time: ", str_start_time)
@@ -40,7 +80,6 @@ class WritingSessionTracker:
             self.calculation()
             self.write_to_file()
 
-
     def end_session(self):
         end_time = datetime.datetime.now()
         self.session["end"] = end_time
@@ -50,9 +89,11 @@ class WritingSessionTracker:
         print(self.session)
 
     def write_to_file(self):
-        with open("new_file.csv", "a", newline='') as csvfile:
+        with open(self.file, "a", newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow([str_time(self.session["start"]), str_time(self.session["end"]), str(self.session["total_time"])])
+
+
 
 tracker = WritingSessionTracker()
 tracker.start_session()
