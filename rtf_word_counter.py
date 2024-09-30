@@ -24,7 +24,6 @@ def get_total_word_count(root_folder):
                 word_count = count_words_in_rtf(file_path)
                 print(f"{file_path} contains {word_count} words.")
                 total_word_count += word_count
-
     return total_word_count
 
 # Define the root folder you want to start from
