@@ -63,9 +63,9 @@ def get_total_word_count(root_folder, scrivx_path):
     return total_word_count
 
 # Define paths
-root_folder = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Files/Data"
-scrivx_path = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Bel e Kyre.scrivx"
+#root_folder = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Files/Data"
+#scrivx_path = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Bel e Kyre.scrivx"
 
 # Calculate total word count
-total_words = get_total_word_count(root_folder, scrivx_path)
-print(f"Total word count for included manuscript documents: {total_words}")
+#total_words = get_total_word_count(root_folder, scrivx_path)
+#print(f"Total word count for included manuscript documents: {total_words}")
