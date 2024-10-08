@@ -1,8 +1,8 @@
 #writing productivity tracker streamlined into a class with dictionary of sessions
 #next features: pull word count from file
 
-import datetime, csv, os
-import scrivx_parser
+import datetime, csv, os, time
+from scrivx_parser import ScrivxParser
 
 def str_time(time):
         #Returns datetime object as a string
@@ -13,6 +13,7 @@ def chop_ms(delta):
     return delta - datetime.timedelta(microseconds=delta.microseconds)
 
 class WritingSessionTracker:
+    print("looping beginning?")
     def __init__(self):
         #instantiates a session as a list within a list
         #self.sessions = [] #needs to pull existing list from file
@@ -23,6 +24,7 @@ class WritingSessionTracker:
         #self.metadata_path = os.path.join(self.project_path, "Settings", "ui.plist")
 
     def start_session(self):
+        print("loop?")
         if os.path.exists(self.file):
             pass
         else:
@@ -38,20 +40,27 @@ class WritingSessionTracker:
             str_start_time = str_time(start_time)
             print("Start Time: ", str_start_time)
             self.session["start"] = start_time
-            self.session["start_count"] = scrivx_parser.get_total_word_count(self.data, self.project_path)
+
+            #check this part
+            parser = ScrivxParser(self.data, self.project_path)
+            parser.start_parse()
+            counter_start = time.perf_counter()
+            self.session["start_count"] = parser.get_total_word_count()
+            counter_end = time.perf_counter()
+            print(f"Word count run time took {counter_end - counter_start} seconds.")
 
         additional_response = input("Type anything when you're finished with this writing session.")
         if response == "":
             print("No input was given.")
         else:
-            self.end_session()
+            self.end_session(parser)
             self.calculation()
             self.write_to_file()
 
-    def end_session(self):
+    def end_session(self, parser):
         end_time = datetime.datetime.now()
         self.session["end"] = end_time
-        self.session["end_count"] = scrivx_parser.get_total_word_count(self.data, self.project_path)
+        self.session["end_count"] = parser.get_total_word_count()
         self.session["words"] = self.session["end_count"] - self.session["start_count"]
         
     def calculation(self):
