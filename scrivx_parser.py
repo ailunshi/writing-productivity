@@ -80,14 +80,3 @@ class ScrivxParser:
         print("Their are ", len(file_paths), " files in the project.")
 
         self.pool_problems(file_paths)
-
-
-if __name__ == "__main__":
-    root_folder = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Files/Data"
-    scrivx_path = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Bel e Kyre.scrivx"
-    
-    scriv = ScrivxParser(root_folder, scrivx_path)
-    scriv.parse_scrivx_file()
-    scriv.run()
-
-    
