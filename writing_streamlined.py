@@ -13,10 +13,10 @@ def chop_ms(delta):
     return delta - datetime.timedelta(microseconds=delta.microseconds)
 
 class WritingSessionTracker:
-    print("looping beginning?")
     def __init__(self):
         #instantiates a session as a list within a list
         #self.sessions = [] #needs to pull existing list from file
+
         self.session = {}
         self.file = "Writing Tracker.csv"
         self.data = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Files/Data"
@@ -24,7 +24,10 @@ class WritingSessionTracker:
         #self.metadata_path = os.path.join(self.project_path, "Settings", "ui.plist")
 
     def start_session(self):
-        print("loop?")
+
+        pumpkin = ScrivxParser(self.data, self.project_path)
+        pumpkin.parse_scrivx_file()
+
         if os.path.exists(self.file):
             pass
         else:
@@ -41,19 +44,20 @@ class WritingSessionTracker:
             print("Start Time: ", str_start_time)
             self.session["start"] = start_time
 
-            #check this part
-            parser = ScrivxParser(self.data, self.project_path)
-            parser.start_parse()
             counter_start = time.perf_counter()
-            self.session["start_count"] = parser.get_total_word_count()
+
+
+            words = pumpkin.run()
+
+            print("shite")
             counter_end = time.perf_counter()
             print(f"Word count run time took {counter_end - counter_start} seconds.")
 
         additional_response = input("Type anything when you're finished with this writing session.")
-        if response == "":
+        if additional_response == "":
             print("No input was given.")
         else:
-            self.end_session(parser)
+            #self.end_session(parser)
             self.calculation()
             self.write_to_file()
 
@@ -72,5 +76,6 @@ class WritingSessionTracker:
             writer = csv.writer(csvfile)
             writer.writerow([str_time(self.session["start"]), str_time(self.session["end"]), str(self.session["total_time"]), self.session["start_count"], self.session["end_count"], self.session["words"]])
 
-tracker = WritingSessionTracker()
-tracker.start_session()
+if __name__== "__main__":
+    tracker = WritingSessionTracker()
+    tracker.start_session()
