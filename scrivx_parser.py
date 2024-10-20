@@ -8,7 +8,6 @@ from multiprocessing import Pool
 
 class ScrivxParser:
     def __init__(self, root_folder, scrivx_path):
-        #need it as a set
         self.included_docs = set()
         self.file_paths = []
         self.root_folder = root_folder
@@ -43,8 +42,6 @@ class ScrivxParser:
                     if doc_id in self.included_docs:
                         self.file_paths.append(os.path.join(root, file))
 
-        return self.file_paths
-    
     def count_words(self, file_path):
         # Convert RTF content to plain text
         try:
@@ -55,28 +52,23 @@ class ScrivxParser:
             #2) it is at the end of a sentence
             word_count = len(re.split(r'\s+|(?<=\w)\u2014(?![“”\'\".]|$)', text))
 
-            #print("count words in rtf word count is ", word_count)
             return word_count
 
         except Exception as e:
             print(f"Error processing {file_path}: {e}")
             return 0
-    
-    def pool_problems(self, files):
+
+    def run(self):
+        # Parses the project file using parallelization
+
+        if not self.file_paths:
+            self.get_files()
+        
+        print("There are ", len(self.file_paths), " files in the project.")
 
         with Pool() as pool:            
-            word_counts = pool.map(self.count_words, files) #issue is here; pool is causing some kind of loop??    
+            word_counts = pool.map(self.count_words, self.file_paths)
 
         total_word_count = sum(word_counts)
         print(total_word_count)
         return total_word_count
-
-    def run(self):
-        root_folder = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Files/Data"
-        scrivx_path = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Bel e Kyre.scrivx"
-
-        file_paths = self.get_files()
-
-        print("Their are ", len(file_paths), " files in the project.")
-
-        self.pool_problems(file_paths)
