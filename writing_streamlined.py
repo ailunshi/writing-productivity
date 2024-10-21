@@ -59,7 +59,7 @@ class WritingSessionTracker:
     def end_session(self, parser):
         # Ends session and calculates the data
         self.session["end"] = datetime.datetime.now()
-        self.session["end_count"] = parser.run(self.data, self.project_path)
+        self.session["end_count"] = parser.run()
         self.session["words"] = self.session["end_count"] - self.session["start_count"]
         self.session["total_time"] = chop_ms(self.session["end"] - self.session["start"])
         print(self.session)
