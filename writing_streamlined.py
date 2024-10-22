@@ -15,7 +15,8 @@ def chop_ms(delta):
 class WritingSessionTracker:
     def __init__(self):
         self.session = {}
-        self.file = "Writing Tracker.csv"
+        self.tracker = "writingtracker.csv"
+        self.tracker_data = "Data.csv"
         self.data = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Files/Data"
         self.project_path = "/Users/balloon/Bel e Kyre/Bel e Kyre.scriv/Bel e Kyre.scrivx"
 
@@ -25,21 +26,26 @@ class WritingSessionTracker:
         parser = ScrivxParser(self.data, self.project_path)
         parser.parse_scrivx_file()
 
-        if os.path.exists(self.file):
+        if os.path.exists(self.tracker):
             pass
         else:
-            with open(self.file, "a", newline='') as csvfile:
+            with open(self.tracker, "a", newline='') as csvfile:
                 writer = csv.writer(csvfile)
-                writer.writerow(["Start Time", "End Time", "Total Time", "Start Count", "End Count", "Words"])
+                writer.writerow(["Date", "Day", "Start Time", "End Time", "Elapsed Time", "Start Count", "End Count", "Words"])
 
         response = input("Type anything to start.")
         if response == "":
             print("No input was given.")
         else:
-            start_time = datetime.datetime.now()
-            str_start_time = str_time(start_time)
-            print("Start Time: ", str_start_time)
-            self.session["start"] = start_time
+            start_timestamp = datetime.datetime.now()
+            self.session["start_timestamp"] = start_timestamp
+            self.session["date"] = start_timestamp.strftime("%m/%d/%Y")
+            self.session["day"] = start_timestamp.strftime("%A")
+            self.session["start_time"] = start_timestamp.strftime("%H:%M:%S")
+
+            #str_start_time = str_time(start_timestamp)
+            #print("Start Time: ", str_start_time)
+            #self.session["start"] = start_timestamp
 
             counter_start = time.perf_counter()
 
@@ -58,17 +64,19 @@ class WritingSessionTracker:
 
     def end_session(self, parser):
         # Ends session and calculates the data
-        self.session["end"] = datetime.datetime.now()
+        end_timestamp = datetime.datetime.now()
+        self.session["end_timestamp"] = end_timestamp
+        self.session["end_time"] = end_timestamp.strftime("%H:%M:%S")
         self.session["end_count"] = parser.run()
         self.session["words"] = self.session["end_count"] - self.session["start_count"]
-        self.session["total_time"] = chop_ms(self.session["end"] - self.session["start"])
+        self.session["elapsed_time"] = str(chop_ms(self.session["end_timestamp"] - self.session["start_timestamp"]))
         print(self.session)
 
     def write_to_file(self):
         # Writes all the pertinent data into a CSV file
-        with open(self.file, "a", newline='') as csvfile:
+        with open(self.tracker, "a", newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow([str_time(self.session["start"]), str_time(self.session["end"]), str(self.session["total_time"]), self.session["start_count"], self.session["end_count"], self.session["words"]])
+            writer.writerow([self.session["date"], self.session["day"], self.session["start_time"], self.session["end_time"], self.session["elapsed_time"], self.session["start_count"], self.session["end_count"], self.session["words"]])
 
 if __name__== "__main__":
     tracker = WritingSessionTracker()
