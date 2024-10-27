@@ -90,16 +90,32 @@ class WritingSessionTracker:
         # Writes all the pertinent data into a CSV file
         with open(self.tracker, "a", newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow([self.session["date"], self.session["day"], self.session["start_time"], self.session["end_time"], self.session["elapsed_time"], self.session["start_count"], self.session["end_count"], self.session["words"]])
+            writer.writerow([self.session["date"], self.session["day"], self.session["start_time"], self.session["end_time"], self.session["elapsed_time"], 
+                             self.session["start_count"], self.session["end_count"], self.session["words"]])
 
-    #def write_to_data_file(self):
+    def write_to_data_file(self):
         # Compiles more useful data based on information from the CSV file
 
-        #"Average Rate", "Total Words", "Total Time", "Total Sessions", "Average Words Per Session", "Average Time Per Session"
+        # "Average Rate", "Total Words", "Total Time", "Total Sessions", "Average Words Per Session", "Average Time Per Session"
 
-        #with open(self.tracker, "a") as datafile:
-            #writer = csv.writer(datafile)
-            #writer.writerow([])
+        # you have a list of all sessions (as dictionaries)
+        # for dict in list
+        # set up a dictionary with key as date, and value as dictionary of all other information
+        data = {}
+
+        for item in self.all_sessions: #item is a dictionary
+            if item["date"] in data.keys():
+                average_rate = (data[item]["total_words"] + item["words"] * 60) / (data[item]["elapsed_time"] + item["elapsed_time"])
+                data[item] = [{"average_rate": average_rate, "total_words": data[item]["total_words"] + item["words"], "total_time": data[item]["elapsed_time"] + item["elapsed_time"],
+                               "total_sessions": data[item]["total_sessions"] + 1, "average_words_per_session": (data[item]["total_words"] + item["words"]) / (data[item]["total_sessions"] + 1),
+                               "average_time_per_session": (data[item]["elapsed_time"] + item["elapsed_time"]) / (data[item]["total_sessions"] + 1)}]
+            else:
+                data[item] = [{"average_rate": item["words"] * 60 / item["elapsed_time"], "total_words": item["words"], "total_time": item["elapsed_time"], 
+                               "total_sessions": 1, "average_words_per_session": item["words"], "average_time_per_session": item["elapsed_time"]}]
+
+        with open(self.tracker, "a") as datafile:
+            writer = csv.writer(datafile)
+            writer.writerow([])
 
     def load_session(self):
         # Loads all sessions for this project from a JSON file
