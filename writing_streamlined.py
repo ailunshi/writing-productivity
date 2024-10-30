@@ -145,8 +145,8 @@ class WritingSessionTracker:
         # Write the calculated data to data.csv
         with open(self.tracker_data, "w", newline='') as datafile:
             writer = csv.writer(datafile)
-            writer.writerow(["Date", "Average Rate", "Total Words", "Total Time (sec)", "Total Sessions", 
-                             "Average Words Per Session", "Average Time Per Session (sec)"])
+            writer.writerow(["Date", "Average Rate", "Total Words", "Total Time (min)", "Total Sessions", 
+                             "Average Words Per Session", "Average Time Per Session (min)"])
             
             for date, stats in self.all_data.items():
                 writer.writerow([
