@@ -24,15 +24,6 @@ def save_datefiles(data):
     with open("data.json", "w") as file:
         json.dump(data, file, default=serialize_datetime)
 
-def load_session(self):
-        # Loads all sessions for this project from a JSON file
-
-        if os.path.exists(self.jsonfile):
-            with open(self.jsonfile, 'r') as f:
-                return json.load(f)
-        else:
-            return []
-
 class WritingSessionTracker:
     def __init__(self, project, data, memory, data_json, writing_tracker, data_tracker):
         # Sets up a WritingSessionTracker object with sessions dictionary, tracker file, and data file
@@ -40,17 +31,22 @@ class WritingSessionTracker:
         self.sessions_jsonfile = memory
         self.data_jsonfile = data_json
         self.all_sessions = self.load_session(self.sessions_jsonfile)
+        print("all sessions ", self.all_sessions)
         self.session = {}
         self.tracker = writing_tracker
         self.tracker_data = data_tracker
         self.all_data = self.load_session(self.data_jsonfile)
+        print("all data ", self.all_data)
         self.data = data
         self.project_path = project
         self.session_dates = []
+        self.session_number = self.load_session_number("session_number.txt")
 
-        for session in self.all_sessions:
-            start_timestamp = unserialize_datetime(session["start_timestamp"])
-            start_date = start_timestamp.strftime("%m/%d/%Y")
+        for count, sessions in self.all_sessions.items():
+            start_timestamp = sessions["start_timestamp"]
+            print("start timestampe ",start_timestamp, " and type ", type(start_timestamp))
+            datetime_start_timestamp = unserialize_datetime(start_timestamp)
+            start_date = datetime_start_timestamp.strftime("%m/%d/%Y")
             self.session_dates.append(start_date)
         print(self.session_dates)
 
@@ -93,7 +89,9 @@ class WritingSessionTracker:
             self.write_to_raw_file()
             self.write_to_data_file()
 
-            self.all_sessions.append(self.session)
+            self.all_sessions[self.session_number] = self.session
+            self.save_session_number("session_number.txt", self.session_number + 1)
+
             self.save_session(self.all_sessions, self.sessions_jsonfile)
 
     def end_session(self, parser):
@@ -122,28 +120,27 @@ class WritingSessionTracker:
         # Initialize data for the session date if it doesn't exist
         session_date = self.session["date"]
         if session_date not in self.session_dates:
-            data = {}
-            data[session_date] = {
+
+            self.all_data[session_date] = {
                 "average_rate": self.session["words"] / (self.session["elapsed_time_sec"] / 3600) if self.session["elapsed_time_sec"] > 0 else 0,
                 "total_words": self.session["words"],
-                "total_time": self.session["elapsed_time_sec"] / 3600,
+                "total_time": self.session["elapsed_time_sec"] / 60, #in minutes
                 "total_sessions": 1,
                 "average_words_per_session": self.session["words"],
-                "average_time_per_session": self.session["elapsed_time_sec"]
+                "average_time_per_session": self.session["elapsed_time_sec"] / 60 #in minutes
             }
-
-            self.all_data.append(data)
+            
         else:
             # Update data for the current session date
-            data = self.all_data[0]
-            print("total words prev ", data[session_date]["total_words"])
+            #data = self.all_data[0]
+            print("total words prev ", self.all_data[session_date]["total_words"])
 
-            data[session_date]["average_rate"] = (data[session_date]["total_words"] + self.session["words"]) / (data[session_date]["total_time"] + self.session["elapsed_time_sec"] / 3600)
-            data[session_date]["total_words"] = data[session_date]["total_words"] + self.session["words"]
-            data[session_date]["total_time"] = data[session_date]["total_time"] + self.session["elapsed_time_sec"] / 3600
-            data[session_date]["total_sessions"] = data[session_date]["total_sessions"] + 1
-            data[session_date]["average_words_per_session"] = data[session_date]["total_words"] / data[session_date]["total_sessions"]
-            data[session_date]["average_time_per_session"] = data[session_date]["total_time"] / data[session_date]["total_sessions"]
+            self.all_data[session_date]["average_rate"] = (self.all_data[session_date]["total_words"] + self.session["words"]) / ((self.all_data[session_date]["total_time"] + (self.session["elapsed_time_sec"] / 60)) / 60)
+            self.all_data[session_date]["total_words"] += self.session["words"]
+            self.all_data[session_date]["total_time"] += self.session["elapsed_time_sec"] / 60 #in minutes
+            self.all_data[session_date]["total_sessions"] += 1
+            self.all_data[session_date]["average_words_per_session"] = self.all_data[session_date]["total_words"] / self.all_data[session_date]["total_sessions"]
+            self.all_data[session_date]["average_time_per_session"] = self.all_data[session_date]["total_time"] / self.all_data[session_date]["total_sessions"] #in minutes
 
         # Write the calculated data to data.csv
         with open(self.tracker_data, "w", newline='') as datafile:
@@ -151,7 +148,7 @@ class WritingSessionTracker:
             writer.writerow(["Date", "Average Rate", "Total Words", "Total Time (sec)", "Total Sessions", 
                              "Average Words Per Session", "Average Time Per Session (sec)"])
             
-            for date, stats in data.items():
+            for date, stats in self.all_data.items():
                 writer.writerow([
                     date,
                     stats["average_rate"],
@@ -170,12 +167,27 @@ class WritingSessionTracker:
 
         if os.path.exists(file):
             with open(file, 'r') as f:
-                return json.load(f)
+                return json.loads(f.read())
         else:
-            return []
+            return {}
 
     def save_session(self, file, jsonfile):
         # Saves current writing session to a JSON file
 
         with open(jsonfile, "w") as f:
             json.dump(file, f, default=serialize_datetime)
+
+    def load_session_number(self, file):
+        # Loads the session number from a file
+
+        if os.path.exists(file):
+            with open(file, 'r') as f:
+                return int(f.read())
+        else:
+            return 1
+    
+    def save_session_number(self, file, session_number):
+        # Saves the session number to a file
+
+        with open(file, "w") as f:
+            f.write(str(session_number))
