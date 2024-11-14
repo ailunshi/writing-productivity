@@ -31,12 +31,10 @@ class WritingSessionTracker:
         self.sessions_jsonfile = memory
         self.data_jsonfile = data_json
         self.all_sessions = self.load_session(self.sessions_jsonfile)
-        print("all sessions ", self.all_sessions)
         self.session = {}
         self.tracker = writing_tracker
         self.tracker_data = data_tracker
         self.all_data = self.load_session(self.data_jsonfile)
-        print("all data ", self.all_data)
         self.data = data
         self.project_path = project
         self.session_dates = []
@@ -44,11 +42,9 @@ class WritingSessionTracker:
 
         for count, sessions in self.all_sessions.items():
             start_timestamp = sessions["start_timestamp"]
-            print("start timestampe ",start_timestamp, " and type ", type(start_timestamp))
             datetime_start_timestamp = unserialize_datetime(start_timestamp)
             start_date = datetime_start_timestamp.strftime("%m/%d/%Y")
             self.session_dates.append(start_date)
-        print(self.session_dates)
 
     def start_session(self):
         # Starts the session, initiates a ScrivxParser object, runs parser
@@ -131,10 +127,6 @@ class WritingSessionTracker:
             }
             
         else:
-            # Update data for the current session date
-            #data = self.all_data[0]
-            print("total words prev ", self.all_data[session_date]["total_words"])
-
             self.all_data[session_date]["average_rate"] = (self.all_data[session_date]["total_words"] + self.session["words"]) / ((self.all_data[session_date]["total_time"] + (self.session["elapsed_time_sec"] / 60)) / 60)
             self.all_data[session_date]["total_words"] += self.session["words"]
             self.all_data[session_date]["total_time"] += self.session["elapsed_time_sec"] / 60 #in minutes
