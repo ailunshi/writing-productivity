@@ -1,5 +1,8 @@
 # Cache
 __pycache__
 
+# Archive
+/archive/
+
 # Environments
 venv/
