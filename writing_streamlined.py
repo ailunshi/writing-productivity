@@ -25,7 +25,7 @@ def save_datefiles(data):
         json.dump(data, file, default=serialize_datetime)
 
 class WritingSessionTracker:
-    def __init__(self, project, data, memory, data_json, writing_tracker, data_tracker):
+    def __init__(self, project, data, memory, data_json, writing_tracker, data_tracker, session_file):
         # Sets up a WritingSessionTracker object with sessions dictionary, tracker file, and data file
         
         self.sessions_jsonfile = memory
@@ -38,7 +38,8 @@ class WritingSessionTracker:
         self.data = data
         self.project_path = project
         self.session_dates = []
-        self.session_number = self.load_session_number("session_number.txt")
+        self.session_number = self.load_session_number(session_file)
+        self.session_file = session_file
 
         for count, sessions in self.all_sessions.items():
             start_timestamp = sessions["start_timestamp"]
@@ -64,6 +65,7 @@ class WritingSessionTracker:
             print("No input was given.")
         else:
             start_timestamp = datetime.datetime.now()
+            print("Start time: " + str_time(start_timestamp))
             self.session["start_timestamp"] = start_timestamp
             self.session["date"] = start_timestamp.strftime("%m/%d/%Y")
             self.session["day"] = start_timestamp.strftime("%A")
@@ -81,22 +83,25 @@ class WritingSessionTracker:
         if additional_response == "":
             print("No input was given.")
         else:
-            self.end_session(parser)
+            self.end_session()
             self.write_to_raw_file()
             self.write_to_data_file()
 
             self.all_sessions[self.session_number] = self.session
-            self.save_session_number("session_number.txt", self.session_number + 1)
+            self.save_session_number(self.session_file, self.session_number + 1)
 
             self.save_session(self.all_sessions, self.sessions_jsonfile)
 
-    def end_session(self, parser):
+    def end_session(self):
         # Ends session and calculates the data
+        end_parser = ScrivxParser(self.data, self.project_path)
+        end_parser.parse_scrivx_file()
 
         end_timestamp = datetime.datetime.now()
+        print("End time: " + str_time(end_timestamp))
         self.session["end_timestamp"] = end_timestamp
         self.session["end_time"] = end_timestamp.strftime("%H:%M:%S")
-        self.session["end_count"] = parser.run()
+        self.session["end_count"] = end_parser.run()
         self.session["words"] = self.session["end_count"] - self.session["start_count"]
         self.session["elapsed_time_str"] = str(chop_ms(self.session["end_timestamp"] - self.session["start_timestamp"]))
         self.session["elapsed_time_sec"] = int(chop_ms(self.session["end_timestamp"] - self.session["start_timestamp"]).total_seconds())
@@ -111,7 +116,6 @@ class WritingSessionTracker:
 
     def write_to_data_file(self):
         # Compiles more useful data based on information from the CSV file
-
 
         # Initialize data for the session date if it doesn't exist
         session_date = self.session["date"]
@@ -173,10 +177,12 @@ class WritingSessionTracker:
         # Loads the session number from a file
 
         if os.path.exists(file):
-            with open(file, 'r') as f:
+            with open(file, "r") as f:
                 return int(f.read())
         else:
-            return 1
+            with open(file, "w") as f:
+                f.write(str(1))
+                return 1
     
     def save_session_number(self, file, session_number):
         # Saves the session number to a file

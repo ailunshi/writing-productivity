@@ -5,6 +5,7 @@ import re
 import argparse
 import time
 from multiprocessing import Pool
+from word_counter import word_count
 
 class ScrivxParser:
     def __init__(self, root_folder, scrivx_path):
@@ -32,6 +33,7 @@ class ScrivxParser:
 
     def get_files(self):
         # Walk through the folder and all subfolders
+
         for root, dirs, files in os.walk(self.root_folder):
             for file in files:
                 if file == "content.rtf":
@@ -46,13 +48,9 @@ class ScrivxParser:
         # Convert RTF content to plain text
         try:
             text = pypandoc.convert_file(file_path, 'plain')
+            words = word_count(text)
 
-            #Splits on space. Splits on em dash after a word UNLESS
-            #1) it is followed by quotes
-            #2) it is at the end of a sentence
-            word_count = len(re.split(r'\s+|(?<=\w)\u2014(?![“”\'\".]|$)', text))
-
-            return word_count
+            return words
 
         except Exception as e:
             print(f"Error processing {file_path}: {e}")
@@ -72,3 +70,10 @@ class ScrivxParser:
         total_word_count = sum(word_counts)
         print(total_word_count)
         return total_word_count
+    
+
+
+
+
+
+
