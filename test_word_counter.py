@@ -24,9 +24,11 @@ The angel said something that he did not understand."""
     def test_ellipses(self):
         t1 = "Wow..."
         t2 = "And... you wanted to do that?"
+        t3 = "Are we... sure that she leaked voxie?"
 
         self.assertEqual(word_count(t1), 1)
         self.assertEqual(word_count(t2), 6)
+        self.assertEqual(word_count(t3), 7)
 
     def test_punctuation_and_dialogue(self):
         t0 = "So you're saying that's it?"
@@ -45,6 +47,11 @@ The angel said something that he did not understand."""
         t1 = "The only words on it were written in white ink—Carousel, 112."
 
         self.assertEqual(word_count(t1), 12)
+
+    def test_hyphens(self):
+        t1 = "I'm a well-known author"
+
+        self.assertEqual(word_count(t1), 4)
 
 
     
